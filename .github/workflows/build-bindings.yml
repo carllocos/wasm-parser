@@ -3,10 +3,7 @@ name: Build wasm bindings
 on:
   push:
     branches: [main]
-    paths:
-      - "src/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
+
   workflow_dispatch: {}
 
 permissions:
