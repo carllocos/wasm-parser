@@ -38,3 +38,14 @@ jobs:
             git commit -m "chore: rebuild wasm bindings [skip ci]"
             git push
           fi
+
+      - name: Tag release if Cargo.toml version changed
+        run: |
+          VERSION=$(grep -m1 '^version' Cargo.toml | sed -E 's/version = "(.*)"/\1/')
+          TAG="v$VERSION"
+          if git ls-remote --tags origin | grep -q "refs/tags/$TAG$"; then
+            echo "Tag $TAG already exists on origin, skipping"
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
