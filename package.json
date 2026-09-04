@@ -1,0 +1,15 @@
+{
+  "name": "wasm-parser",
+  "version": "0.1.0",
+  "description": "Rust WasmModule parser (using wasmparser) exposed to TypeScript via wasm-bindgen",
+  "license": "GPL-3.0-only OR MIT",
+  "main": "pkg/wasm_parser.js",
+  "types": "pkg/wasm_parser.d.ts",
+  "files": [
+    "pkg"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/carllocos/wasm-parser.git"
+  }
+}
