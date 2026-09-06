@@ -31,6 +31,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          rm -f pkg/.gitignore
           git add -f pkg
           if git diff --cached --quiet; then
             echo "pkg/ unchanged, nothing to commit"
