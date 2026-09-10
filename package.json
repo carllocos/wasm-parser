@@ -5,11 +5,20 @@
   "license": "GPL-3.0-only OR MIT",
   "main": "pkg/wasm_parser.js",
   "types": "pkg/wasm_parser.d.ts",
+  "type": "module",
   "files": [
     "pkg"
   ],
   "repository": {
     "type": "git",
     "url": "https://github.com/carllocos/wasm-parser.git"
+  },
+  "scripts": {
+    "test:ts": "node --test 'test-ts/**/*.test.ts'",
+    "typecheck:ts": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^7.0.2"
   }
 }

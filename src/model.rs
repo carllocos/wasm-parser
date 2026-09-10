@@ -109,6 +109,38 @@ pub struct RustTableExport {
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct RustMemory {
+    pub id: u32,
+    /// Initial size of the memory, in 64KiB wasm pages.
+    pub initial_pages: u32,
+    /// Maximum size of the memory, in 64KiB wasm pages, if declared.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maximum_pages: Option<u32>,
+    pub shared: bool,
+    pub memory64: bool,
+    pub start_address: u32,
+    pub end_address: u32,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct RustMemoryImport {
+    pub module: String,
+    pub name: String,
+    pub id: u32,
+    /// Initial size of the memory, in 64KiB wasm pages.
+    pub initial_pages: u32,
+    /// Maximum size of the memory, in 64KiB wasm pages, if declared.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maximum_pages: Option<u32>,
+    pub shared: bool,
+    pub memory64: bool,
+    pub start_address: u32,
+    pub end_address: u32,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct RustElement {
     pub table_id: u32,
     pub funcs: Vec<u32>,
@@ -167,8 +199,16 @@ pub struct RustModule {
     pub types: Vec<RustFuncType>,
     pub func_imports: Vec<RustFuncImport>,
     pub table_imports: Vec<RustTableImport>,
+    pub memory_imports: Vec<RustMemoryImport>,
     pub funcs: Vec<RustFunc>,
     pub globals: Vec<RustGlobal>,
+    pub memories: Vec<RustMemory>,
+    /// Number of 64KiB pages the module's linear memory (defined locally or
+    /// imported) was initially declared with. `0` if the module declares no
+    /// memory at all. Mirrors `getInitialMemoryPages`; see `memories` /
+    /// `memory_imports` above for the full memory type (maximum, shared,
+    /// memory64) when more than this single figure is needed.
+    pub initial_memory_pages: u32,
     pub exported_funcs: Vec<RustFuncExport>,
     pub table_exports: Vec<RustTableExport>,
     pub elements: Vec<RustElement>,

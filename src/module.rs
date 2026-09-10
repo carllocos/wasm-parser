@@ -45,6 +45,7 @@ pub fn parse(bytes: &[u8]) -> Result<RustModule, String> {
     let mut function_type_indices: Vec<u32> = Vec::new();
     let mut num_func_imports: u32 = 0;
     let mut num_table_imports: u32 = 0;
+    let mut num_memory_imports: u32 = 0;
     let mut code_index: u32 = 0;
 
     for payload in Parser::new(0).parse_all(bytes) {
@@ -107,7 +108,21 @@ pub fn parse(bytes: &[u8]) -> Result<RustModule, String> {
                             });
                             num_table_imports += 1;
                         }
-                        TypeRef::Memory(_) | TypeRef::Global(_) | TypeRef::Tag(_) => {
+                        TypeRef::Memory(mem_ty) => {
+                            m.memory_imports.push(RustMemoryImport {
+                                module: imp.module.to_string(),
+                                name: imp.name.to_string(),
+                                id: num_memory_imports,
+                                initial_pages: mem_ty.initial as u32,
+                                maximum_pages: mem_ty.maximum.map(|v| v as u32),
+                                shared: mem_ty.shared,
+                                memory64: mem_ty.memory64,
+                                start_address: start,
+                                end_address: end,
+                            });
+                            num_memory_imports += 1;
+                        }
+                        TypeRef::Global(_) | TypeRef::Tag(_) => {
                             // Not modeled by the TypeScript ParsedModule.
                         }
                     }
@@ -126,6 +141,17 @@ pub fn parse(bytes: &[u8]) -> Result<RustModule, String> {
             }
             Payload::MemorySection(reader) => {
                 m.sections.push(to_section("memory", reader.range()));
+                for (i, (mem_ty, start, end)) in with_ranges(reader)?.into_iter().enumerate() {
+                    m.memories.push(RustMemory {
+                        id: num_memory_imports + i as u32,
+                        initial_pages: mem_ty.initial as u32,
+                        maximum_pages: mem_ty.maximum.map(|v| v as u32),
+                        shared: mem_ty.shared,
+                        memory64: mem_ty.memory64,
+                        start_address: start,
+                        end_address: end,
+                    });
+                }
             }
             Payload::TagSection(reader) => {
                 m.sections.push(to_section("custom", reader.range()));
@@ -313,6 +339,13 @@ pub fn parse(bytes: &[u8]) -> Result<RustModule, String> {
             }
         }
     }
+
+    m.initial_memory_pages = m
+        .memories
+        .first()
+        .map(|mem| mem.initial_pages)
+        .or_else(|| m.memory_imports.first().map(|mem| mem.initial_pages))
+        .unwrap_or(0);
 
     Ok(m)
 }

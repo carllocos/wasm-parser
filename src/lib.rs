@@ -29,3 +29,18 @@ pub fn parse_wasm_module(bytes: &[u8]) -> Result<String, JsError> {
 pub fn parse_wasm_module_native(bytes: &[u8]) -> Result<model::RustModule, String> {
     module::parse(bytes)
 }
+
+/// Returns the number of 64KiB pages the module's linear memory was
+/// initially declared with, i.e. the `initial` field of its `MemoryType`
+/// (whether the memory is defined locally or imported). Returns `0` if the
+/// module declares no memory at all.
+///
+/// This is a convenience for callers that only need this one figure and
+/// would otherwise have to parse the full `parseWasmModule` JSON output and
+/// read `memories[0].initialPages` / `memoryImports[0].initialPages`
+/// themselves.
+#[wasm_bindgen(js_name = getInitialMemoryPages)]
+pub fn get_initial_memory_pages(bytes: &[u8]) -> Result<u32, JsError> {
+    let parsed = module::parse(bytes).map_err(|e| JsError::new(&e))?;
+    Ok(parsed.initial_memory_pages)
+}
