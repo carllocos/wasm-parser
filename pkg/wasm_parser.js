@@ -1,6 +1,30 @@
 /* @ts-self-types="./wasm_parser.d.ts" */
 
 /**
+ * Returns the number of 64KiB pages the module's linear memory was
+ * initially declared with, i.e. the `initial` field of its `MemoryType`
+ * (whether the memory is defined locally or imported). Returns `0` if the
+ * module declares no memory at all.
+ *
+ * This is a convenience for callers that only need this one figure and
+ * would otherwise have to parse the full `parseWasmModule` JSON output and
+ * read `memories[0].initialPages` / `memoryImports[0].initialPages`
+ * themselves.
+ * @param {Uint8Array} bytes
+ * @returns {number}
+ */
+function getInitialMemoryPages(bytes) {
+    const ptr0 = passArray8ToWasm0(bytes, wasm.__wbindgen_malloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ret = wasm.getInitialMemoryPages(ptr0, len0);
+    if (ret[2]) {
+        throw takeFromExternrefTable0(ret[1]);
+    }
+    return ret[0] >>> 0;
+}
+exports.getInitialMemoryPages = getInitialMemoryPages;
+
+/**
  * Parses a WebAssembly binary and returns a JSON string describing its
  * module structure (sections, types, imports, functions with their nested
  * instruction trees, globals, exports, and elements).

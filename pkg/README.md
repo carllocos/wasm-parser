@@ -7,12 +7,19 @@ A Rust `.wasm` module parser built on
 from the wasmito TypeScript codebase as a drop-in replacement for the
 `@webassemblyjs/wasm-parser`-backed parser.
 
-It exposes a single function, `parseWasmModule(bytes: Uint8Array): string`,
-that decodes a WebAssembly binary and returns a JSON string describing its
-sections, types, imports, functions (with a fully nested instruction tree,
-byte-accurate start/end addresses, and resolved names from the `name`
-custom section), globals, exports, and active element segments. See
-`src/model.rs` for the exact JSON shape.
+It exposes two functions:
+
+- `parseWasmModule(bytes: Uint8Array): string` decodes a WebAssembly binary
+  and returns a JSON string describing its sections, types, imports,
+  functions (with a fully nested instruction tree, byte-accurate start/end
+  addresses, and resolved names from the `name` custom section), globals,
+  linear memories (`memories`/`memoryImports`, with initial/maximum page
+  counts, `shared`, `memory64`, plus a top-level `initialMemoryPages`
+  shortcut — `0` if the module declares no memory), exports, and active
+  element segments. See `src/model.rs` for the exact JSON shape.
+- `getInitialMemoryPages(bytes: Uint8Array): number` is a convenience that
+  returns just `initialMemoryPages` above without needing to parse the full
+  JSON module.
 
 ## Building
 
@@ -67,3 +74,18 @@ cargo test
 
 Compares parsed output against the repo's existing `.wasm` fixtures under
 `test/data/`.
+
+### TypeScript bindings
+
+`test-ts/` has example/regression tests for the generated `pkg/` bindings
+(`getInitialMemoryPages`, `parseWasmModule`), useful as usage examples for
+consumers. They run directly against the `.ts` sources via Node's built-in
+type-stripping support (no bundler/ts-node needed), so a recent Node (22.18+,
+or any version with unflagged `--experimental-strip-types`) is required:
+
+```sh
+npm install                                    # installs typescript/@types/node dev dependencies
+wasm-pack build --target nodejs --out-dir pkg  # see "Building" above; rebuilds pkg/ from src/
+npm run test:ts
+npm run typecheck:ts  # optional: tsc --noEmit over test-ts/
+```
